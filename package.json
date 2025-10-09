@@ -8,10 +8,12 @@
     "locations:dev": "NODE_ENV=development node ./generates/generateLocations.js",
     "vehicle:dev": "NODE_ENV=development node ./generates/generateVehicles.js",
     "fence:dev": "NODE_ENV=development node ./generates/generateFences.js",
+    "clear:dev": "NODE_ENV=development node ./generates/generateClearTables.js",
     "task:prod": "NODE_ENV=production node ./generates/generateTasks.js",
     "locations:prod": "NODE_ENV=production node ./generates/generateLocations.js",
     "vehicle:prod": "NODE_ENV=production node ./generates/generateVehicles.js",
-    "fence:prod": "NODE_ENV=production node ./generates/generateFences.js"
+    "fence:prod": "NODE_ENV=production node ./generates/generateFences.js",
+    "clear:prod": "NODE_ENV=production node ./generates/generateClearTables.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",

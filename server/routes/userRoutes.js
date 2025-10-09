@@ -55,7 +55,6 @@ async function userRoutes(fastify) {
   fastify.post('/addUser', async function (request, reply) {
     try {
       const { username, nickname, password, status, position, department, office_location, role_id } = request.body;
-      // console.log('查看添加人员的报错============', request.body)
 
       // 简单校验
       if (!username || !nickname || !password) {
