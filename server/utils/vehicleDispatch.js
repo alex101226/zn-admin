@@ -35,8 +35,7 @@ async function getAvailableVehicle(fastify, vehicle_id) {
   const [rows] = await fastify.db.execute(
       `SELECT *
      FROM zn_vehicles
-     WHERE status IN ('1','4') AND id= ? -- 使用中 or 闲置
-       AND control_status = '2' -- 未调度
+     WHERE status IN ('1','4') AND id= ?
      LIMIT 1`, [vehicle_id]
   );
   return rows[0] || null;
@@ -120,8 +119,7 @@ async function assignRouteToVehicle(fastify, vehicle, route) {
   // 更新车辆状态
   await fastify.db.execute(
       `UPDATE zn_vehicles
-     SET control_status = '1',  -- 已调度
-         assigned_route_id = ?,
+     SET assigned_route_id = ?,
          status = '1'            -- 使用中
      WHERE id = ?`,
       [route.id, vehicle.id]
@@ -138,8 +136,11 @@ async function dispatchSingleVehicle(fastify, vehicle_id, batch_id) {
   // 1. 查找可调度车辆
   const vehicle = await getAvailableVehicle(fastify, vehicle_id);
   if (!vehicle) {
-    fastify.log.info("没有可调度的车辆");
-    return null;
+    // fastify.log.info("没有可调度的车辆");
+    return {
+      ok: false,
+      message: '没有可调度的车辆'
+    };
   }
 
   // 2. 查找未占用路线
@@ -160,10 +161,12 @@ async function dispatchSingleVehicle(fastify, vehicle_id, batch_id) {
     }
   }
 
-  console.log('看下路线信息', route)
   if (!route) {
     fastify.log.info(`车辆 ${vehicle.id} 未找到合适路线`);
-    return null;
+    return {
+      ok: false,
+      message: `车辆 ${vehicle.vehicle_alias} 未找到合适路线`
+    };
   }
 
   // 4. 分配路线
@@ -173,7 +176,7 @@ async function dispatchSingleVehicle(fastify, vehicle_id, batch_id) {
       `车辆 ${vehicle.id} (${vehicle.vehicle_alias}) 已调度到路线 ${routeId}`
   );
 
-  return { vehicle_id: vehicle.id, route_id: routeId };
+  return { vehicle_id: vehicle.id, route_id: routeId, ok: true, message: '调度成功' };
 }
 
 export { dispatchSingleVehicle };
