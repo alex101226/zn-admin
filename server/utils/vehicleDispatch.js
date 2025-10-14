@@ -99,29 +99,32 @@ async function getNearestRouteByLocation(fastify, vehicle) {
  * 分配路线给车辆
  */
 async function assignRouteToVehicle(fastify, vehicle, route) {
+  // 兜底：防止 estimated_time 是 null 或空字符串
+  const estimatedTime = Number(route.estimated_time) || 0;
+  const estimatedMinutes = Math.round(estimatedTime * 60); // 转分钟，四舍五入
   // 插入调度记录
   await fastify.db.execute(
       `INSERT INTO zn_vehicle_dispatches
-      (
-       vehicle_id,
-       route_id,
-       dispatch_status,
-       transport_status,
-       batch_id,
-       expected_end_time,
-       start_time,
-       created_at
-      )
-     VALUES (?, ?, '1', '1', ?, DATE_ADD(NOW(), INTERVAL ? HOUR), NOW(), NOW())`,
-      [vehicle.id, route.id, getUUid(), route.estimated_time]
+       (
+           vehicle_id,
+           route_id,
+           dispatch_status,
+           transport_status,
+           batch_id,
+           expected_end_time,
+           start_time,
+           created_at
+       )
+       VALUES (?, ?, '1', '1', ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), NOW(), NOW())`,
+      [vehicle.id, route.id, getUUid(), estimatedMinutes]
   );
 
   // 更新车辆状态
   await fastify.db.execute(
       `UPDATE zn_vehicles
-     SET assigned_route_id = ?,
-         status = '1'            -- 使用中
-     WHERE id = ?`,
+       SET assigned_route_id = ?,
+           status = '1'            -- 使用中
+       WHERE id = ?`,
       [route.id, vehicle.id]
   );
 

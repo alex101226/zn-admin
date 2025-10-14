@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import {getRealRunningTime} from "../utils/date.js";
+// import {getRealRunningTime} from "../utils/date.js";
 
 
 /**
@@ -16,41 +16,44 @@ export function dispatchScanner(fastify)  {
   cron.schedule('* * * * *', async () => {
     fastify.log.info('[车辆调度任务] 开始扫描运行中任务...');
     try {
-      // 查出调度表中 dispatch_status = 1 的记录
-      const [dispatches] = await fastify.db.execute(
-          `SELECT id, expected_end_time FROM zn_vehicle_dispatches WHERE dispatch_status = 1`
+      // 查出调度表中正在执行的调度任务
+      const [runningDispatches] = await fastify.db.execute(
+          `SELECT
+                id,
+                expected_end_time,
+                vehicle_id,
+                (NOW() >= expected_end_time) AS shouldEnd
+            FROM zn_vehicle_dispatches WHERE dispatch_status = 1`
       )
+      if (runningDispatches.length === 0) return;
+      const now = new Date();
 
-      for (const dispatch of dispatches) {
-        await fastify.db.execute(
-            `UPDATE zn_vehicle_dispatches
+      for (const dispatch of runningDispatches) {
+        // console.log('查看dispatch', dispatch)
+        // 如果达到预计结束时间
+        if (dispatch.shouldEnd) {
+          await fastify.db.execute(
+              `UPDATE zn_vehicle_dispatches
              SET dispatch_status = '3',
                  transport_status = '4',
-                 end_time =  DATE_ADD(
-                         expected_end_time,
-                         INTERVAL FLOOR(RAND() * 1201 - 600) SECOND
-                )
+                 end_time = NOW(),
+                 updated_at = NOW()
              WHERE id = ?`,
-            [dispatch.id]
-        )
-      }
+              [dispatch.id]
+          );
 
-      // 查出车辆表中 control_status = 1 的记录
-      const [vehicles] = await fastify.db.execute(
-          `SELECT id FROM zn_vehicles WHERE control_status = 1`
-      )
+          //  修改车辆状态等
+          await fastify.db.execute(
+              `UPDATE zn_vehicles
+               SET status = '4',
+                   assigned_route_id = NULL,
+                   updated_at = NOW()
+               WHERE id = ?`,
+              [dispatch.vehicle_id]
+          );
 
-      if (vehicles.length > 0) {
-        const [updateVehicles] = await fastify.db.execute(
-            `UPDATE zn_vehicles
-         SET control_status = 2,
-             status = 4,
-             assigned_route_id = NULL
-         WHERE control_status = 1`
-        )
-        console.log(`车辆表更新 ${updateVehicles.affectedRows} 条记录`)
-      } else {
-        console.log('车辆表没有需要更新的记录')
+          fastify.log.info(`[车辆调度] 任务 ${dispatch.id} 已完成，车辆 ${dispatch.vehicle_id} 释放`);
+        }
       }
     } catch (err) {
       fastify.log.error(`[vehicle 任务] 出错: ${err.message}`);
