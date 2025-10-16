@@ -1,0 +1,37 @@
+# 忽略 node_modules（容器内会重新 npm install）
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+pnpm-lock.yaml
+
+# 忽略构建输出目录（例如 React 打包产物）
+dist
+build
+
+# 忽略环境配置文件（避免把敏感信息打进镜像）
+.env
+.env.local
+.env.development
+.env.production
+
+# 忽略 Git 相关文件
+.git
+.gitignore
+
+# 忽略编辑器和系统生成的文件
+.DS_Store
+.idea
+*.swp
+.rspack-profile-*/
+.vscode/*
+!.vscode/extensions.json
+
+# 日志文件
+logs
+*.log
+
+# 临时文件
+tmp
+*.tmp
+
