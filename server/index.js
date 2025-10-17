@@ -5,7 +5,7 @@ import config from './config/index.js';
 // Run the server!
 const start = async () => {
   try {
-    await app.listen({ port: '9091', host: '0.0.0.0' }, (err, address) => {
+    await app.listen({ port: config.port, host: config.host }, (err, address) => {
       if (err) {
         app.log.error(`地址错误吗: ${err}`)
         process.exit(1)
