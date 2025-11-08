@@ -113,7 +113,7 @@ async function commonRoutes(fastify) {
 	  // 1. 车辆统计
 	  const [vehicleRows] = await fastify.db.execute(`
       SELECT 
-        SUM(CASE WHEN status IN ('1', '3') THEN 1 ELSE 0 END) AS normalCount,
+        SUM(CASE WHEN status IN ('1', '4') THEN 1 ELSE 0 END) AS normalCount,
         COUNT(*) AS totalCount
       FROM zn_vehicles
     `);
