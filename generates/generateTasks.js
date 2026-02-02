@@ -41,7 +41,7 @@ const conn = await mysql.createConnection({
 async function generateTasks() {
   try {
     for (let i = 0; i < NUM_TASKS; i++) {
-      const createdAt = randomDate(new Date('2025-05-01'), new Date('2025-06-30'));
+      const createdAt = randomDate(new Date('2025-10-15'), new Date('2025-12-31'));
       const planMinutes = randomInt(10, 60);
       const planTimeStr = dayjs().startOf('day').add(planMinutes, 'minute').format('HH:mm:ss');
       const { realTimeStr } = getRealRunningTime(planTimeStr, 120);
