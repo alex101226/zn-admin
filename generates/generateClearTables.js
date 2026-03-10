@@ -12,17 +12,18 @@ const db = await mysql.createConnection({
   connectionLimit: 10,
   queueLimit: 0,
 });
-
+	//	vehicle-web, vehicle-admin
 // ======== 想清空的表名集合 ========
 const tables = [
-  'zn_logistics_routes',
-  'zn_route_stations',
-  'zn_vehicle_dispatches',
-  'zn_vehicle_drivers',
-  'zn_vehicles',
-  'zn_users',
-  'zn_user_roles',
-  'zn_user_permissions'
+  // 'zn_logistics_routes',
+  // 'zn_route_stations',
+  // 'zn_vehicle_dispatches',
+  // 'zn_vehicle_drivers',
+  // 'zn_vehicles',
+  // 'zn_users',
+  // 'zn_user_roles',
+  // 'zn_user_permissions'
+  'zn_tasks'
 ]
 
 // ===== 路由：清空表 =====
